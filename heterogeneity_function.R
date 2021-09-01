@@ -146,7 +146,7 @@ infectiousness_trunc_plotter <- function(R, truncation_vec, distribution_type, d
     xlim(c(0,25)) +
     theme_bw() +
     facet_wrap(~truncation_point, nrow=1) +
-    labs(x = "day", y = "Onward infection risk density") +
+    labs(x = expression(tau), y = expression(paste(beta,"(",t,",",tau,")"))) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5, color="black") + 
     theme(strip.text.x = element_blank())
   
@@ -156,6 +156,7 @@ infectiousness_trunc_plotter <- function(R, truncation_vec, distribution_type, d
 }
 
 trunc_plots <- infectiousness_trunc_plotter(R=3,truncation_vec=c(0.25,0.5,0.75), distribution_type="gamma", distribution_param_1=10.56, distribution_param_2=1.85, lower_letter=1, upper_letter=4)
+trunc_plots
 
 symp_asymp_gt_plotter <- function(mean_diff_vec, distribution_type, distribution_param_1, distribution_param_2, lower_letter, upper_letter){
   gT_init <- gT_generator(distribution_type, distribution_param_1, distribution_param_2)$gT_dist
@@ -194,7 +195,7 @@ symp_asymp_gt_plotter <- function(mean_diff_vec, distribution_type, distribution
     xlim(c(0,25)) +
     theme_bw() +
     facet_wrap(~mean_diff, labeller = label_both, nrow=1) +
-    labs(x = "day", y = "Onward infection risk density") + 
+    labs(x = expression(tau), y = expression(paste(omega,"(",tau,")"))) + 
     theme(strip.text.x = element_blank()) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5)
   
@@ -204,7 +205,7 @@ symp_asymp_gt_plotter <- function(mean_diff_vec, distribution_type, distribution
 }
 
 symp_asymp_gt <- symp_asymp_gt_plotter(mean_diff_vec=c(0.5,2), distribution_type="gamma", distribution_param_1=10.56, distribution_param_2=1.85, lower_letter=1, upper_letter=2)
-
+symp_asymp_gt
 
 vaccine_impact_plotter <- function(R, vaccine_impact_vec, distribution_type, distribution_param_1, distribution_param_2, lower_letter, upper_letter){
   gT_init <- gT_generator(distribution_type, distribution_param_1, distribution_param_2)$gT_dist
@@ -244,7 +245,7 @@ vaccine_impact_plotter <- function(R, vaccine_impact_vec, distribution_type, dis
     xlim(c(0,20)) +
     theme_bw() +
     facet_wrap(~reduction_factor, labeller = label_both, nrow=1) +
-    labs(x = "day", y = "Probability density of onward infection") +
+    labs(x = expression(tau), y = expression(paste(beta,"(",t,",",tau,")"))) +
     theme(strip.text.x = element_blank()) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5)
   
@@ -255,6 +256,8 @@ vaccine_impact_plotter <- function(R, vaccine_impact_vec, distribution_type, dis
 }
 
 vaccine_impact <- vaccine_impact_plotter(R=3, vaccine_impact_vec=seq(0.25,0.75,0.25), distribution_type="gamma", distribution_param_1=10.56, distribution_param_2=1.85, lower_letter = 1, upper_letter=3)
+vaccine_impact
+
 
 mult_format <- function() {
   function(x) format(x/(1-x),digits = 2) 
@@ -574,12 +577,12 @@ R_isol_no_isol <- ggplot(data = R_by_w_gT_trunc_simple %>% rename(isolating_popu
   geom_line(aes(color=growth_rate, linetype=isolating_population)) +
   scale_linetype_manual(values=c("dotted", "dashed","solid")) +
   theme_bw() +
-  labs(y = "Multi-type R / Single-type R", x = "Proportion of infectiousness passed at point of isolation") +
+  labs(y = expression(R["adjusted"] / R["unadjusted"]), x = "Proportion of infectiousness passed at point of isolation") +
   annotate("text", x=0, y=max(R_by_w_gT_trunc_simple$R_relative), label="E", fontface="bold", size=5)
 
 isol_no_isol_plot <- ggarrange(trunc_plots, R_isol_no_isol)
 
-ggsave(plot=isol_no_isol_plot, filename=paste("graphs/error_R_isol_no_isol6.png"), width=10, height=5)
+ggsave(plot=isol_no_isol_plot, filename=paste("graphs/error_R_isol_no_isol_10.png"), width=10, height=5)
 
 
 R_rel <- ggplot(R_by_gT_rel_simple %>% filter(mean_diff != 1) %>% rename(asymptomatic_population = population_size) %>% arrange(w) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))), aes(x=relative_inf, y=R_relative)) +
@@ -589,12 +592,12 @@ R_rel <- ggplot(R_by_gT_rel_simple %>% filter(mean_diff != 1) %>% rename(asympto
   scale_x_continuous(labels=mult_format()) +
   theme_bw() +
   theme(strip.text.x = element_blank()) +
-  labs(y = "Multi-type R / Single-type R", x = "Relative infectiousness of asymptomatics") +
+  labs(y = expression(R["adjusted"] / R["unadjusted"]), x = "Relative infectiousness of asymptomatics") +
   geom_text(data = data.frame(x = c(0,0), y=rep(max(R_by_gT_rel_simple$R_relative),2), label=c("C","D"), mean_diff = c(0.5,2)), aes(x=x, y=y, label=label), fontface="bold", size=5)
 
 symp_asymp_plot <- ggarrange(symp_asymp_gt, R_rel)
 
-ggsave(plot=symp_asymp_plot, filename=paste("graphs/error_R_symp_asymp6.png"), width=10, height=5)
+ggsave(plot=symp_asymp_plot, filename=paste("graphs/error_R_symp_asymp_10.png"), width=10, height=5)
 
 
 R_vacc_no_vacc_A <- ggplot(R_by_gT_rel_A_simple %>% filter(population_size %in% c(0.2,0.5,0.8), mean_diff != 1) %>% rename(vaccinated_population = population_size) %>% arrange(w) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))), aes(x=associativity, y=R_relative)) +
@@ -606,7 +609,7 @@ R_vacc_no_vacc_A <- ggplot(R_by_gT_rel_A_simple %>% filter(population_size %in% 
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         strip.text.x = element_blank()) +
-  ylab("Multi-type R / Single-type R") +
+  ylab(expression(R["adjusted"] / R["unadjusted"])) +
   geom_text(data = data.frame(x = rep(min(R_by_gT_rel_A_simple$associativity),3), y=rep(max(R_by_gT_rel_A_simple$R_relative),3), label=c("D","E","F"), scenario = as.factor(c(0.25,0.5,0.75))), aes(x=x, y=y, label=label), fontface="bold", size=5)
 
 
@@ -634,7 +637,8 @@ R_vacc_no_vacc_k_diff_0.3 <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinated_p
         axis.text.x = element_blank(),
         strip.text.x = element_blank()) +
   ylab("k") +
-  geom_text(data = data.frame(x = rep(min(R_by_gT_rel_A_simple$associativity),3), y=rep(max(R_by_gT_rel_A_simple$k1_normalised),3), label=c("G","H","I"), scenario = as.factor(c(0.25,0.5,0.75))), aes(x=x, y=y, label=label), fontface="bold", size=5)
+  geom_text(data = data.frame(x = rep(min(R_by_gT_rel_A_simple$associativity),3), y=rep(max(R_by_gT_rel_A_simple$k1_normalised),3), label=c("G","H","I"), scenario = as.factor(c(0.25,0.5,0.75))), aes(x=x, y=y, label=label), fontface="bold", size=5) + 
+  geom_text(data = data.frame(associativity=10, value=1, label="r = 0.3"), aes(x=associativity, y=value, label=label))
 
 
 R_vacc_no_vacc_k_diff_0.3_neg <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinated_population = population_size, k_unvaccinated = k1_normalised, k_vaccinated = k2_normalised) %>% arrange(w) %>% filter(associativity %in% c(-19:19), mean_diff != 1) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% tidyr::gather(metric, "value", c(10:14,19,20)) %>% filter(growth_rate == -0.3, metric %in% c("k_unvaccinated", "k_vaccinated"), vaccinated_population %in% c(0.2,0.5,0.8)) %>% mutate(metric = factor(metric, levels=c("k_vaccinated", "k_unvaccinated"))), aes(x=associativity, y=value)) +
@@ -647,7 +651,9 @@ R_vacc_no_vacc_k_diff_0.3_neg <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinat
         strip.text.x = element_blank()) +
   xlab(expression(dissassortative %->% homogeneous %->% assortative)) +
   ylab("k") +
-  geom_text(data = data.frame(x = rep(min(R_by_gT_rel_A_simple$associativity),3), y=rep(max(R_by_gT_rel_A_simple$k1_normalised),3), label=c("J","K","L"), scenario = as.factor(c(0.25,0.5,0.75))), aes(x=x, y=y, label=label), fontface="bold", size=5)
+  geom_text(data = data.frame(x = rep(min(R_by_gT_rel_A_simple$associativity),3), y=rep(max(R_by_gT_rel_A_simple$k1_normalised),3), label=c("J","K","L"), scenario = as.factor(c(0.25,0.5,0.75))), aes(x=x, y=y, label=label), fontface="bold", size=5)+ 
+  geom_text(data = data.frame(associativity=10, value=1, label="r = -0.3"), aes(x=associativity, y=value, label=label))
+
 
 
 #vaccine_plot2 <- ggarrange(vaccine_impact, R_vacc_no_vacc_A,nrow=2)
@@ -655,10 +661,10 @@ R_vacc_no_vacc_k_diff_0.3_neg <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinat
 
 
 vaccine_plot3 <- ggarrange(vaccine_impact, R_vacc_no_vacc_A, R_vacc_no_vacc_k_diff_0.3, R_vacc_no_vacc_k_diff_0.3_neg, nrow=4)
-ggsave(plot=vaccine_plot3, filename=paste("graphs/error_R_vacc_no_vacc_zoom7.png"), width=10, height=12)
+ggsave(plot=vaccine_plot3, filename=paste("graphs/error_R_vacc_no_vacc_zoom_10.png"), width=10, height=12)
 
 
-R_by_gT_rel_A_test <- R_by_gT_rel_A %>% rename(vaccinated_population = population_size) %>% arrange(w) %>% filter(associativity != -20) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% filter(growth_rate == 0.15, vaccinated_population == 0.5, associativity %in% c(-19,0,19), mean_diff == 0.5)
+R_by_gT_rel_A_test <- R_by_gT_rel_A_simple %>% rename(vaccinated_population = population_size) %>% arrange(w) %>% filter(associativity != -20) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% filter(growth_rate == 0.15, vaccinated_population == 0.5, associativity %in% c(-19,0,19), mean_diff == 0.5)
 
 
 ## Application to UK situation 
