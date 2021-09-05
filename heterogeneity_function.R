@@ -91,7 +91,7 @@ gT_proposal_trunc <- function(truncation_point, distribution_type, distribution_
   old_cumulative_dist <- cumsum(old_dist)
   
   new_dist <- old_dist
-  new_dist[c(which(old_cumulative_dist>truncation_point)[1]:length(new_dist))] <- 0
+  new_dist[c(which(old_cumulative_dist>=truncation_point)[1]:length(new_dist))] <- 0
   new_dist <- new_dist
   
   if(normalise==TRUE) new_dist <- new_dist/sum(new_dist)
@@ -148,7 +148,8 @@ infectiousness_trunc_plotter <- function(R, truncation_vec, distribution_type, d
     facet_wrap(~truncation_point, nrow=1) +
     labs(x = expression(tau), y = expression(paste(beta,"(",t,",",tau,")"))) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5, color="black") + 
-    theme(strip.text.x = element_blank())
+    theme(strip.text.x = element_blank(),
+          axis.text.y = element_blank())
   
   ggsave(plot=p, filename=paste("graphs/trunc_inf_dist.png"), width=10, height=2.5)
   
@@ -196,7 +197,8 @@ symp_asymp_gt_plotter <- function(mean_diff_vec, distribution_type, distribution
     theme_bw() +
     facet_wrap(~mean_diff, labeller = label_both, nrow=1) +
     labs(x = expression(tau), y = expression(paste(omega,"(",tau,")"))) + 
-    theme(strip.text.x = element_blank()) +
+    theme(strip.text.x = element_blank(),
+          axis.text.y = element_blank()) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5)
   
   ggsave(plot=p, filename=paste("graphs/symp_gT_dist.png"), width=17, height=5)
@@ -246,7 +248,8 @@ vaccine_impact_plotter <- function(R, vaccine_impact_vec, distribution_type, dis
     theme_bw() +
     facet_wrap(~reduction_factor, labeller = label_both, nrow=1) +
     labs(x = expression(tau), y = expression(paste(beta,"(",t,",",tau,")"))) +
-    theme(strip.text.x = element_blank()) +
+    theme(strip.text.x = element_blank(),
+          axis.text.y = element_blank()) +
     geom_text(data = dat_text, mapping = aes(x = x, y = y, label = label, fontface="bold"), size=5)
   
   
@@ -582,7 +585,7 @@ R_isol_no_isol <- ggplot(data = R_by_w_gT_trunc_simple %>% rename(isolating_popu
 
 isol_no_isol_plot <- ggarrange(trunc_plots, R_isol_no_isol)
 
-ggsave(plot=isol_no_isol_plot, filename=paste("graphs/error_R_isol_no_isol_10.png"), width=10, height=5)
+ggsave(plot=isol_no_isol_plot, filename=paste("graphs/error_R_isol_no_isol_11.png"), width=10, height=5)
 
 
 R_rel <- ggplot(R_by_gT_rel_simple %>% filter(mean_diff != 1) %>% rename(asymptomatic_population = population_size) %>% arrange(w) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))), aes(x=relative_inf, y=R_relative)) +
@@ -597,7 +600,7 @@ R_rel <- ggplot(R_by_gT_rel_simple %>% filter(mean_diff != 1) %>% rename(asympto
 
 symp_asymp_plot <- ggarrange(symp_asymp_gt, R_rel)
 
-ggsave(plot=symp_asymp_plot, filename=paste("graphs/error_R_symp_asymp_10.png"), width=10, height=5)
+ggsave(plot=symp_asymp_plot, filename=paste("graphs/error_R_symp_asymp_11.png"), width=10, height=5)
 
 
 R_vacc_no_vacc_A <- ggplot(R_by_gT_rel_A_simple %>% filter(population_size %in% c(0.2,0.5,0.8), mean_diff != 1) %>% rename(vaccinated_population = population_size) %>% arrange(w) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))), aes(x=associativity, y=R_relative)) +
@@ -630,6 +633,7 @@ R_vacc_no_vacc_A <- ggplot(R_by_gT_rel_A_simple %>% filter(population_size %in% 
 R_vacc_no_vacc_k_diff_0.3 <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinated_population = population_size, k_unvaccinated = k1_normalised, k_vaccinated = k2_normalised) %>% arrange(w) %>% filter(associativity %in% c(-19:19), mean_diff != 1) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% tidyr::gather(metric, "value", c(10:14,19,20)) %>% filter(growth_rate == 0.3, metric %in% c("k_unvaccinated", "k_vaccinated"), vaccinated_population %in% c(0.2,0.5,0.8)) %>% mutate(metric = factor(metric, levels=c( "k_vaccinated", "k_unvaccinated"))), aes(x=associativity, y=value)) +
   geom_line(aes(color = metric, linetype = vaccinated_population)) +
   scale_linetype_manual(values=c("dotted", "dashed", "solid")) +
+  scale_color_manual(values = c("blue","red")) +
   facet_wrap(~scenario, labeller = label_both, nrow=1) +
   theme_bw() +
   scale_x_continuous(breaks = seq(-20,20,20)) +
@@ -643,6 +647,7 @@ R_vacc_no_vacc_k_diff_0.3 <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinated_p
 
 R_vacc_no_vacc_k_diff_0.3_neg <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinated_population = population_size, k_unvaccinated = k1_normalised, k_vaccinated = k2_normalised) %>% arrange(w) %>% filter(associativity %in% c(-19:19), mean_diff != 1) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% tidyr::gather(metric, "value", c(10:14,19,20)) %>% filter(growth_rate == -0.3, metric %in% c("k_unvaccinated", "k_vaccinated"), vaccinated_population %in% c(0.2,0.5,0.8)) %>% mutate(metric = factor(metric, levels=c("k_vaccinated", "k_unvaccinated"))), aes(x=associativity, y=value)) +
   geom_line(aes(color = metric, linetype = vaccinated_population)) +
+  scale_color_manual(values = c("blue","red")) +
   scale_linetype_manual(values=c("dotted", "dashed", "solid")) +
   facet_wrap(~scenario, labeller = label_both, nrow=1) +
   theme_bw() +
@@ -661,7 +666,7 @@ R_vacc_no_vacc_k_diff_0.3_neg <- ggplot(R_by_gT_rel_A_simple %>% rename(vaccinat
 
 
 vaccine_plot3 <- ggarrange(vaccine_impact, R_vacc_no_vacc_A, R_vacc_no_vacc_k_diff_0.3, R_vacc_no_vacc_k_diff_0.3_neg, nrow=4)
-ggsave(plot=vaccine_plot3, filename=paste("graphs/error_R_vacc_no_vacc_zoom_10.png"), width=10, height=12)
+ggsave(plot=vaccine_plot3, filename=paste("graphs/error_R_vacc_no_vacc_zoom_11.png"), width=10, height=12)
 
 
 R_by_gT_rel_A_test <- R_by_gT_rel_A_simple %>% rename(vaccinated_population = population_size) %>% arrange(w) %>% filter(associativity != -20) %>% mutate(growth_rate = factor(growth_rate, levels=c(-0.3, -0.15, 0 , 0.15, 0.3))) %>% filter(growth_rate == 0.15, vaccinated_population == 0.5, associativity %in% c(-19,0,19), mean_diff == 0.5)
@@ -719,6 +724,9 @@ gt_asym_optim <- weighted_gt_generator(distribution_type="gamma", distribution_p
 gt_asym_pesim <- weighted_gt_generator(distribution_type="gamma", distribution_param_1=shape, distribution_param_2=rate, mean_difference=  2, truncation_point=1, risk_trans=c(1,2),   pop_vec=c(0.63, 0.37), isol=FALSE, asymp=TRUE, plot=TRUE)
 gt_isol_asym_optim <- weighted_gt_generator(distribution_type="gamma", distribution_param_1=shape, distribution_param_2=rate, mean_difference=0.5, truncation_point=0.3, risk_trans=c(1, 0.3, 0.5), pop_vec=c(0.63*0.25 ,0.63*0.75, 0.37), isol=TRUE, asymp=TRUE, plot=TRUE)
 gt_isol_asym_pesim <- weighted_gt_generator(distribution_type="gamma", distribution_param_1=shape, distribution_param_2=rate, mean_difference=2,   truncation_point=0.7, risk_trans=c(1, 0.7,   2), pop_vec=c(0.63*0.75, 0.63*0.25, 0.37), isol=TRUE, asymp=TRUE, plot=TRUE)
+
+gt_asymp_control_1sd_up <- weighted_gt_generator(distribution_type="gamma", distribution_param_1=shape*(1.1^2)/0.9, distribution_param_2=rate*1.1/0.9, mean_difference=1, truncation_point=0.99999, risk_trans=c(1), pop_vec=c(1), isol=FALSE, asymp=FALSE, plot=TRUE)
+gt_asymp_control_1sd_down <- weighted_gt_generator(distribution_type="gamma", distribution_param_1=shape*(0.9^2)/1.1, distribution_param_2=rate*0.9/1.1, mean_difference=1, truncation_point=0.99999, risk_trans=c(1), pop_vec=c(1), isol=FALSE, asymp=FALSE, plot=TRUE) 
 
 plot(gt_control, type="l", xlim=c(0,10))
 lines(gt_isol_optim, type="l")
@@ -895,6 +903,64 @@ R_EVD_Guinea_plot <- ggplot(overall_df_evd, aes(x=as.Date(t_start_evd))) +
 
 applied_isol_plot <- ggarrange(R_EVD_Guinea_plot,R_UK_isolation_plot, nrow=2)  
 ggsave(plot=applied_isol_plot, filename=paste("graphs/R_isolation_UK_Guinea6.png"), width=10, height=5)
+
+
+## Extension application with uncertain serial interval
+R_asymp.control
+R_asymp.optim
+R_asymp.pesim
+
+R_asymp.control.unc_up <- estimate_R(incid = deaths_data$deaths,
+                              method = "non_parametric_si",
+                              config = make_config(list(si_distr = c(0,gt_asymp_control_1sd_up))))$R[,c("Quantile.0.25(R)","Median(R)", "Quantile.0.975(R)")] %>%
+  set_colnames(c("asymp.control_up.lower", "asymp.control_up.median", "asymp.control_up.upper"))
+
+R_asymp.control.unc_down <- estimate_R(incid = deaths_data$deaths,
+                              method = "non_parametric_si",
+                              config = make_config(list(si_distr = c(0,gt_asymp_control_1sd_down))))$R[,c("Quantile.0.25(R)","Median(R)", "Quantile.0.975(R)")] %>%
+  set_colnames(c("asymp.control_down.lower", "asymp.control_down.median", "asymp.control_down.upper"))
+
+t_start <- seq(as.Date("2020-02-29"), as.Date("2020-02-29")+nrow(R_asymp.control)-1, 1)
+
+overall_df_unc <- cbind(t_start, R_asymp.control.unc_up, R_asymp.control.unc_down, R_asymp.optim, R_asymp.pesim)
+
+overall_df_final_unc <- overall_df_unc %>% tidyr::gather("metric", "value", 2:ncol(overall_df_unc)) %>% rowwise() %>%
+  mutate(scenario = str_split(metric,"\\.")[[1]][1],
+         sensitivity = str_split(metric,"\\.")[[1]][2], 
+         interval = str_split(metric,"\\.")[[1]][3]) %>%
+  select(-metric) %>%
+  tidyr::spread(interval, "value") %>%
+  group_by(scenario, sensitivity) #%>%
+
+R_UK_symp_plot_unc <- ggplot(overall_df_final_unc , aes(x = t_start)) +
+  geom_line(aes(y=median, color=sensitivity)) +
+  scale_color_manual(values=c("blue","orange", "green", "red")) +
+  geom_ribbon(aes(ymin=lower, ymax=upper, fill=sensitivity), alpha=0.1) +
+  scale_fill_manual(values=c("blue","orange", "green", "red")) +
+  #geom_ribbon(aes(ymin=control.lower, ymax=control.upper), alpha=0.1) +
+  facet_wrap(~scenario, nrow=2) +
+  theme_bw() +
+  scale_y_continuous(limits=c(0,2)) +
+  theme(axis.title.x = element_blank()) +
+  labs(y = "Derived R") +
+  ggtitle("n-SARS-CoV2 infection, United Kingdom") +
+  theme(strip.text.x = element_blank()) 
+
+ggsave(plot=R_UK_symp_plot_unc, filename=paste("graphs/R_UK_symp_plot_unc6.png"), width=10, height=5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #applications_plot <- ggarrange(R_EVD_Guinea_plot, R_UK_plot, nrow=2)
